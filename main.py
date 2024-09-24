@@ -16,12 +16,15 @@ targets = numpy. concatenate (
     (numpy. ones ( classA . shape [0]) ,
      -numpy. ones ( classB . shape [0])))
 
-N = inputs . shape [0] # Number of rows (samples)
+N = inputs.shape [0] # Number of rows (samples)
 
 permute=list(range (N))
 random. shuffle(permute)
 inputs = inputs[permute, : ]
 targets = targets[permute ]
+
+
+
 
 
 def ind(S):
@@ -30,7 +33,7 @@ def ind(S):
 
 def linear_kernel(x, y):
     # This kernel simply returns the scalar product between the two points. This results in a linear separation.
-    return 0
+    return numpy.dot(x, y)
 
 def polynomial_kernel(x, y, p):
     # This kernel allows for curved decision boundaries. The exponent p (a positive integer) controls the degree of the polynomials. p = 2 will make quadratic shapes (ellipses, parabolas, hyperbolas). Setting p = 3 or higher will result in more complex shapes.
@@ -38,7 +41,14 @@ def polynomial_kernel(x, y, p):
 
 def RBF_kernel(x, y, sigma=5.0):
     # radial basis function kernel. This kernel uses the explicit euclidian distance between the two datapoints, and often results in very good boundaries. The parameter σ is used to control the smoothness of the boundary
-    return 0
+    return math.exp(-numpy.linalg.norm(x-y)**2/(2*sigma))
+
+def calculate_matrix(kernel_func, parameter):
+    P = numpy.zeros((N , N))
+    for i in range(N):
+        for j in range(N):
+            P[i,j] = targets(i)*targets(j)*kernel_func(input(i),input(j), **parameter)
+    return P
 
 def objective (alpha):
     # returns a scalar value, effectively implementing the expression should be minimized in equation (4)
