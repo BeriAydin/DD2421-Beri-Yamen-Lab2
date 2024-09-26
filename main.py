@@ -43,16 +43,16 @@ def RBF_kernel(x, y, sigma=5.0):
     # radial basis function kernel. This kernel uses the explicit euclidian distance between the two datapoints, and often results in very good boundaries. The parameter σ is used to control the smoothness of the boundary
     return math.exp(-numpy.linalg.norm(x-y)**2/(2*sigma))
 
-def calculate_matrix(kernel_func, parameter):
+def calculate_matrix(kernel_func, **parameters):
     P = numpy.zeros((N , N))
     for i in range(N):
         for j in range(N):
-            P[i,j] = targets(i)*targets(j)*kernel_func(input(i),input(j), **parameter)
+            P[i,j] = targets(i)*targets(j)*kernel_func(input(i),input(j), **parameters)
     return P
 
 def objective (alpha):
     # returns a scalar value, effectively implementing the expression should be minimized in equation (4)
-    return 0
+    return 0.5*numpy.sum(P)
 
 def zerofun(alpha):
     # This function should implement the equality constraint of (10). Also here, you can make use of numpy.dot to be efficient.
