@@ -56,41 +56,86 @@ def zerofun(alpha):
     return np.dot(alpha,targets)
 
 constraint={'type':'eq', 'fun':zerofun}
+start = np.random.rand(N) * 0.1
+C = 1000000000
 
 ret = minimize( objective , start , bounds=[(0, C) for b in range(N)], constraints={'type':'eq', 'fun':zerofun} )
+foundOpt = ret['success']
 alpha = ret ['x']
 
 # extract the non-zero α values that are greater than 10^-5 and save them as a np array along with their corresponding input and target values.
 alpha_nonzeros = []
-alpha_threshold = 10**-5
+alpha_threshold = 0
 for i in range(N):
     if alpha[i] > alpha_threshold:
         alpha_nonzeros.append((alpha[i], inputs[i], targets[i]))
+
+
+
+print("Alpha values:", alpha)
+print("Optimization success:", ret['success'])
+print("Message:", ret['message'])
 
 # calculate the bias term b using equation (7) for each of the support vectors.
 def calculate_b(K, parameter = None):
     s = alpha_nonzeros[0] # choose the first support vector
     temp_b = 0
     for i in range(N):
-        b += alpha[i]*targets[i]*K(inputs[i], s[1])
+        temp_b += alpha[i]*targets[i]*K(inputs[i], s[1])
     temp_b -= s[2]
     return temp_b
 b = calculate_b(K)
+
+
 
 def ind(S, K, parameter = None):
     # It is used to determine the class of the input. + value means 1 class, - value means -1 class.
     temp_class = 0
     if parameter is None:
         for i in range(N):
-            temp_class += alpha[i]*targets[i]*K(S, inputs[i], parameter)
-            temp_class -= calculate_b(K, parameter)
+            temp_class += alpha[i]*targets[i]*K(S, inputs[i])
+        temp_class -= calculate_b(K)
     else:
         for i in range(N):
-            temp_class += alpha[i]*targets[i]*K(S, inputs[i])
-            temp_class -= calculate_b(K)
+            temp_class += alpha[i]*targets[i]*K(S, inputs[i], parameter)
+        temp_class -= calculate_b(K, parameter)
+    # log the class of the input and the clas
+    print("Classs:", np.sign(temp_class))
     return np.sign(temp_class)
 
-#########TEST PHASE#########
+# 6. Plotting the data set
+plt.plot([p[0] for p in classA],
+         [p[1] for p in classA],
+         'b.')
+plt.plot([p[0] for p in classB],
+        [p[1] for p in classB],
+        'r.')
+#plt.axis('equal') # Force same scale on both axes
+#plt.savefig('svmplot.pdf') # Save a copy in a file 
+#plt.show() # Show the plot on the screen
+
+
+# 7. Plotting the decision boundary
+xgrid = np.linspace(-5, 5)
+ygrid = np.linspace(-4, 4)
+grid = np.array([[ind(np.array([x, y]), K) for x in xgrid] for y in ygrid])
+plt.contour(xgrid, ygrid, grid, (-1.0, 0.0, 1.0), 
+            colors=('red', 'black', 'blue'), 
+            linewidths=(1, 3, 1 ))
+
+plt.plot([p[0] for p in classA],
+            [p[1] for p in classA],
+            'b.')
+plt.plot([p[0] for p in classB],
+            [p[1] for p in classB],
+            'r.')
+plt.axis('equal') # Force same scale on both axes
+plt.savefig('svmplot.pdf') # Save a copy in a file
+plt.show() # Show the plot on the screen
+
+
+print(ind(classA[0],K), 'A')
+print(ind(classB[0],K), 'B')
 
 
 
