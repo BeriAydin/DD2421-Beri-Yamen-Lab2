@@ -2,38 +2,54 @@ import numpy as np , random , math
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 
-
-
 # 5. Generating the data set
-classA = np.concatenate (
-    (np.random. randn(10 , 2) * 0.2 + [1.5 , 0.5] ,
-     np.random. randn(10 , 2) * 0.2 + [ -1.5 , 0.5]))
-classB = np.random. randn(20 , 2) * 0.2 + [0.0 , -0.5]
+# make a global variable for the data set inputs, targets, class A, class B and  N 0 rows (samples)
+inputs = np.zeros((0, 2))  # Assuming a 2D array of 0 samples
+targets = np.zeros((0,))   # 1D array for targets
+permute = []               # Permutation array
+N = 0                      # Number of rows (samples)
+classA = np.zeros((0, 2))  # Class A
+classB = np.zeros((0, 2))  # Class B
 
-inputs = np. concatenate (( classA , classB ))
-targets = np. concatenate (
-    (np. ones ( classA . shape [0]) ,
-     -np. ones ( classB . shape [0])))
+def modify_data(mean1, mean2, mean3, variance1, variance2, variance3):
+    global inputs, targets, N, classA, classB, permute
+    classA = np. concatenate (
+        ( np. random . randn (10 , 2) * variance1 + mean1 ,
+         np. random . randn (10 , 2) * variance2 + mean2))
+    classB = np. random . randn (20 , 2) * variance3 + mean3 
+    inputs = np. concatenate (( classA , classB ))
+    targets = np. concatenate (
+        (np. ones ( classA . shape [0]) ,
+        -np. ones ( classB . shape [0])))
+    N = inputs.shape [0] # Number of rows (samples)
+    permute=list(range (N))
+    random. shuffle(permute)
+    inputs = inputs[permute, : ]
+    targets = targets[permute ]
 
-N = inputs.shape [0] # Number of rows (samples)
+mean1 = (1.0, 0.5)  # mean of class A clusster 1
+mean2 = (-1.0, 0.5) # mean of class A cluster 2
+mean3 = (0.0, 0.5) # mean of class B cluster
+variance1 = 0.2    # variance of class A cluster 1
+variance2 = 0.2  # variance of class A cluster 2
+variance3 = 0.2    # variance of class B cluster
 
-permute=list(range (N))
-random. shuffle(permute)
-inputs = inputs[permute, : ]
-targets = targets[permute ]
- 
+photoname = str(mean1)+'_'+str(mean2)+'_'+str(mean3)+'_'+str(variance1)+'_'+str(variance2)+'_'+str(variance3)
+
+modify_data(mean1, mean2, mean3, variance1, variance2, variance3)
+
 def linear_kernel(x, y):
     # This kernel simply returns the scalar product between the two points. This results in a linear separation.
     return np.dot(x, y)
 
-def polynomial_kernel(x, y, p):
+def polynomial_kernel(x, y, p=2):
     # This kernel allows for curved decision boundaries. The exponent p (a positive integer) controls the degree of the polynomials. p = 2 will make quadratic shapes (ellipses, parabolas, hyperbolas). Setting p = 3 or higher will result in more complex shapes.
     return (1 + np.dot(x, y)) ** p
 
 def RBF_kernel(x, y, sigma=5.0):
     # radial basis function kernel. This kernel uses the explicit euclidian distance between the two datapoints, and often results in very good boundaries. The parameter σ is used to control the smoothness of the boundary
     return math.exp(-np.linalg.norm(x-y)**2/(2*sigma))
-K = linear_kernel       ######################################### Change the kernel here ############################################
+K = polynomial_kernel       ######################################### Change the kernel here ############################################
 
 def calculate_matrix(X, t, K, parameter = None):
     P = np.zeros((N , N))
@@ -99,7 +115,7 @@ def ind(S, K, parameter = None):
         temp_class -= b
     else:
         for sample in alpha_nonzeros:
-            temp_class += sample[0]*sample[2]*K(S, sample[1], sample)
+            temp_class += sample[0]*sample[2]*K(S, sample[1], parameter)
         temp_class -= b
     return temp_class
 
@@ -130,5 +146,14 @@ plt.plot([p[0] for p in classB],
             [p[1] for p in classB],
             'r.')
 #plt.axis('equal') # Force same scale on both axes
-plt.savefig('svmplot.pdf') # Save a copy in a file
+plt.savefig(photoname+K.__name__+'.pdf') # Save a copy in a file
 plt.show() # Show the plot on the screen
+
+# 7. move the clusters around and see how the decision boundary changes
+
+# 8. try different kernels
+# 9. try different values of C
+# 10. try different values of σ for the RBF kernel
+# 11. try different values of p for the polynomial kernel
+# 12. try different kernels
+
