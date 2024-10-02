@@ -14,8 +14,10 @@ classB = np.zeros((0, 2))  # Class B
 def modify_data(mean1, mean2, mean3, variance1, variance2, variance3):
     global inputs, targets, N, classA, classB, permute
     classA = np. concatenate (
-        ( np. random . randn (10 , 2) * variance1 + mean1 ,
-         np. random . randn (10 , 2) * variance2 + mean2))
+        (   np. random . randn (5 , 2) * variance1 + mean1 ,
+            np. random . randn (5 , 2) * variance2 + mean2,
+            np. random . randn (5 , 2) * variance2 + (0,1),
+            np. random . randn (5 , 2) * variance2 + (0,-1),))
     classB = np. random . randn (20 , 2) * variance3 + mean3 
     inputs = np. concatenate (( classA , classB ))
     targets = np. concatenate (
@@ -29,7 +31,7 @@ def modify_data(mean1, mean2, mean3, variance1, variance2, variance3):
 
 mean1 = (1.0, 0.5)  # mean of class A clusster 1
 mean2 = (-1.0, 0.5) # mean of class A cluster 2
-mean3 = (0.0, 0.5) # mean of class B cluster
+mean3 = (0.0, 0.3) # mean of class B cluster
 variance1 = 0.2    # variance of class A cluster 1
 variance2 = 0.2  # variance of class A cluster 2
 variance3 = 0.2    # variance of class B cluster
@@ -42,14 +44,14 @@ def linear_kernel(x, y):
     # This kernel simply returns the scalar product between the two points. This results in a linear separation.
     return np.dot(x, y)
 
-def polynomial_kernel(x, y, p=2):
+def polynomial_kernel(x, y, p=17):
     # This kernel allows for curved decision boundaries. The exponent p (a positive integer) controls the degree of the polynomials. p = 2 will make quadratic shapes (ellipses, parabolas, hyperbolas). Setting p = 3 or higher will result in more complex shapes.
     return (1 + np.dot(x, y)) ** p
 
-def RBF_kernel(x, y, sigma=5.0):
+def RBF_kernel(x, y, sigma=1):
     # radial basis function kernel. This kernel uses the explicit euclidian distance between the two datapoints, and often results in very good boundaries. The parameter σ is used to control the smoothness of the boundary
     return math.exp(-np.linalg.norm(x-y)**2/(2*sigma))
-K = polynomial_kernel       ######################################### Change the kernel here ############################################
+K = polynomial_kernel      ######################################### Change the kernel here ############################################
 
 def calculate_matrix(X, t, K, parameter = None):
     P = np.zeros((N , N))
@@ -76,7 +78,7 @@ def zerofun(alpha):
 
 constraint={'type':'eq', 'fun':zerofun}
 start = np.zeros(N)
-C = 1
+C = 20
 
 ret = minimize( objective , start , bounds=[(0, C) for b in range(N)], constraints={'type':'eq', 'fun':zerofun} )
 alpha = ret ['x']

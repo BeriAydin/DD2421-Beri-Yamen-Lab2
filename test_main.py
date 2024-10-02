@@ -22,7 +22,7 @@ random. shuffle(permute)
 inputs = inputs[permute, : ]
 targets = targets[permute ]
  
-k_type = 'linear'
+k_type = 'polynomial'
 
 def K(x,y, kernel_type):
     p = 2

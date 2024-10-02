@@ -70,7 +70,7 @@ plt.axis('equal') # Force same scale on both axes
 start = np.zeros(N)
 P = np.zeros((N,N))
 # specify kernel-method
-Ktype="linear"
+Ktype="polynomial"
 
 for i in range(N):
     for j in range(N):
