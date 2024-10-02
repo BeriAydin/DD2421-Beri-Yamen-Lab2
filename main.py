@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 
 # 5. Generating the data set
 # make a global variable for the data set inputs, targets, class A, class B and  N 0 rows (samples)
+# seed
+np.random.seed(100)
 inputs = np.zeros((0, 2))  # Assuming a 2D array of 0 samples
 targets = np.zeros((0,))   # 1D array for targets
 permute = []               # Permutation array
@@ -44,14 +46,16 @@ def linear_kernel(x, y):
     # This kernel simply returns the scalar product between the two points. This results in a linear separation.
     return np.dot(x, y)
 
-def polynomial_kernel(x, y, p=17):
+parameter_p = 3
+def polynomial_kernel(x, y, p=parameter_p):
     # This kernel allows for curved decision boundaries. The exponent p (a positive integer) controls the degree of the polynomials. p = 2 will make quadratic shapes (ellipses, parabolas, hyperbolas). Setting p = 3 or higher will result in more complex shapes.
     return (1 + np.dot(x, y)) ** p
 
-def RBF_kernel(x, y, sigma=1):
+SIGMA = 1
+def RBF_kernel(x, y, sigma=SIGMA):
     # radial basis function kernel. This kernel uses the explicit euclidian distance between the two datapoints, and often results in very good boundaries. The parameter σ is used to control the smoothness of the boundary
     return math.exp(-np.linalg.norm(x-y)**2/(2*sigma))
-K = polynomial_kernel      ######################################### Change the kernel here ############################################
+K = RBF_kernel      ######################################### Change the kernel here ############################################
 
 def calculate_matrix(X, t, K, parameter = None):
     P = np.zeros((N , N))
@@ -78,7 +82,7 @@ def zerofun(alpha):
 
 constraint={'type':'eq', 'fun':zerofun}
 start = np.zeros(N)
-C = 20
+C = 500
 
 ret = minimize( objective , start , bounds=[(0, C) for b in range(N)], constraints={'type':'eq', 'fun':zerofun} )
 alpha = ret ['x']
@@ -148,7 +152,14 @@ plt.plot([p[0] for p in classB],
             [p[1] for p in classB],
             'r.')
 #plt.axis('equal') # Force same scale on both axes
-plt.savefig(photoname+K.__name__+'.pdf') # Save a copy in a file
+
+if K.__name__ == 'polynomial_kernel':
+    plt.savefig(photoname+K.__name__+" p= "+str(parameter_p)+" C="+str(C)+'.pdf') # Save a copy in a file
+elif K.__name__ == 'RBF_kernel':
+    plt.savefig(photoname+K.__name__+" sigma= "+str(SIGMA)+" C="+str(C)+'.pdf') # Save a copy in a file
+else:
+    plt.savefig(photoname+K.__name__+'.pdf') # Save a copy in a file
+
 plt.show() # Show the plot on the screen
 
 # 7. move the clusters around and see how the decision boundary changes
